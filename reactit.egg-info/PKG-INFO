@@ -1,0 +1,30 @@
+Metadata-Version: 2.4
+Name: reactit
+Version: 0.0.1
+Summary: reaction iterator
+Home-page: https://github.com/badw/reactit
+Author: Benjamin A. D. Williamson
+Author-email: benjamin.williamson@ntnu.no
+License: MIT
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Development Status :: 3 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: System Administrators
+Classifier: Intended Audience :: Industry
+Classifier: Intended Audience :: Information Technology
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Other/Nonlisted Topic
+Classifier: Topic :: Scientific/Engineering
+Requires-Python: >=3.11
+Requires-Dist: numpy
+Requires-Dist: chempy
+Requires-Dist: tqdm
+Requires-Dist: pathos
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: home-page
+Dynamic: license
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
