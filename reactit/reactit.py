@@ -51,43 +51,45 @@ based on a given set of placemarker values
 
     def iterate(
             self,
-            reaction_length=4,
+            max_length=4,
     ):
-        sizing = [
-            x for x in it.combinations_with_replacement(
-                np.arange(
-                    1, reaction_length
-                ),
-                2
-            )
-            if np.sum(x) == reaction_length
-        ]
-
         reactions = []
-        for i,size in enumerate(sizing):
-            reactants = it.combinations(
-                [
-                    x for x in range(self.nc+1)
-                ],
-                size[0]
-            )
-
-
-            products = it.combinations(
-                [
-                    x for x in range(self.nc+1)
-                ],
-                size[1]
-            )
-            combined = tuple(
-                it.product(reactants, products)
+        for reaction_length in range(2,max_length+1):
+            sizing = [
+                x for x in it.combinations_with_replacement(
+                    np.arange(
+                        1, reaction_length
+                    ),
+                    2
                 )
-            filtered = []
-            for v in map(lambda x: ReactionsListGenerator.reaction_filter(x), combined):
-                if v:
-                    filtered.append(v)
-            filtered = list(set(filtered))
-            reactions.extend(filtered)
+                if np.sum(x) == reaction_length
+            ]    
+
+
+            for i,size in enumerate(sizing):
+                reactants = it.combinations(
+                    [
+                        x for x in range(self.nc+1)
+                    ],
+                    size[0]
+                )    
+    
+
+                products = it.combinations(
+                    [
+                        x for x in range(self.nc+1)
+                    ],
+                    size[1]
+                )
+                combined = tuple(
+                    it.product(reactants, products)
+                    )
+                filtered = []
+                for v in map(lambda x: ReactionsListGenerator.reaction_filter(x), combined):
+                    if v:
+                        filtered.append(v)
+                filtered = list(set(filtered))
+                reactions.extend(filtered)
 
         reactions = self.convert_strings(reactions)
         return(reactions)
@@ -186,6 +188,7 @@ class MappingtoReaction:
         return(screened)    
     
     def run_all(self):
+        warnings.filterwarnings('ignore')
         print('orig =',len(self.reactions),end='...')
         approved = self.remove_indices(self.reactions)
         print(' approved = ',len(approved),end='...')
