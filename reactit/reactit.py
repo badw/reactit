@@ -102,8 +102,6 @@ based on a given set of placemarker values
         reactions = self.convert_strings(reactions)
         return(reactions)
 
-
-
 class MappingtoReaction:
     ''' a class that takes a premade reactions reference dictionary and generates a list of reactions with it that are then further balanced and filtered'''
     
@@ -284,14 +282,11 @@ class MappingtoReaction:
         warnings.filterwarnings('ignore')
         approved = self.remove_indices(self.reactions)
         strings = self.convert_to_string(approved)
-
-
         #screened = tqdm_pathos.map(self.mp_function,strings)
         screened = []
         for reaction in tqdm.tqdm(strings):
             screen = self.balance_function(reaction)
             if screen:
                 screened.append(screen)
-
 
         return([x for x in screened if x is not None])
