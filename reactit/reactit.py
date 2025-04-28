@@ -1,11 +1,19 @@
+from typing import Mapping
 import numpy as np 
 import itertools as it 
 import tqdm 
 import gzip 
 import os 
 import math 
-from chempy import balance_stoichiometry, Equilibrium
 import warnings 
+from sympy import symbols, Eq, solve    
+import functools 
+import math 
+from fractions import Fraction 
+import re 
+from collections import defaultdict 
+import tqdm_pathos 
+
 
 
 class ReactionsListGenerator:
@@ -54,7 +62,7 @@ based on a given set of placemarker values
             max_length=4,
     ):
         reactions = []
-        for reaction_length in range(2,max_length+1):
+        for reaction_length in range(3,max_length+1):
             sizing = [
                 x for x in it.combinations_with_replacement(
                     np.arange(
@@ -108,12 +116,21 @@ class MappingtoReaction:
             
     def remove_indices(self,reaction_indexes):
         ''''''
-        indexes =  tuple(self.compounds)
-        approved = []
-        for r in reaction_indexes:
-            if not [x for x in it.chain(*r) if x not in indexes]:
-                approved.append(r)
-        return(approved)
+        @staticmethod
+        def filterfunc(iterable,valid_nums):
+            spec = list(it.chain(*iterable))
+            if not [x for x in spec if x not in valid_nums]:
+                return(iterable)
+                    
+
+        filtered = list(
+            filter(
+                lambda x: x is not None, map(
+                    lambda x: filterfunc(x,self.compounds.keys()),self.reactions
+                    )
+                    )
+        )
+        return(filtered)
     
     def convert_to_string(self,approved_list):
     
@@ -152,49 +169,129 @@ class MappingtoReaction:
                 converted.append(ds)
         return(converted)
     
-    def convert_to_equation(self,converted_strings):
-        converted = []
-        for r in tqdm.tqdm(converted_strings):
-            re,pr = r
+    @staticmethod
+    def parse_molecule(formula): 
+        # Regular expression to match elements and their counts 
+        pattern = r'([A-Z][a-z]?)(\d*)' 
+        matches = re.findall(pattern, formula) 
+         
+        atom_count = defaultdict(int) 
+     
+        for element, count in matches: 
+            if count == '': 
+                count = 1  # Default count is 1 if not specified 
+            else: 
+                count = int(count)  # Convert count to integer 
+             
+            atom_count[element] += count 
+     
+        return dict(atom_count)  
+       
+    @staticmethod
+    def find_int(_lst):
+        denoms = [Fraction(x).denominator for x in _lst]
+        return (
+            functools.reduce(
+                lambda a, b: a*b//math.gcd(a, b), denoms
+            )
+        )    
+
+    def balance_reaction(self,reactants, products):
+        '''this function allows for undetermined systems
+        '''
+        # Create a list of all elements
+        product_keys = list(products.keys())
+        reactant_keys = list(reactants.keys())
+        elements = set()
+        for species in (reactant_keys + product_keys):
+            elements.update(species)
+        elements = sorted(elements)    
+
+        # Set up symbolic coefficients
+        reactant_coeff = [
+                symbols(f'r{i}') for i in range(len(reactants))
+        ]
+        product_coeff = [
+                symbols(f'p{i}') for i in range(len(products))
+        ]
+        equations = []    
+
+        # For each element, write a conservation equation
+        for element in elements:
+            reactant_sum = sum(reactants[species].get(element, 0) * reactant_coeff[i]
+                               for i, species in enumerate(reactants))
+            product_sum = sum(products[species].get(element, 0) * product_coeff[i]
+                              for i, species in enumerate(products))
+            equations.append(Eq(reactant_sum, product_sum))    
+
+        # Add an extra equation to fix one variable to 1 (to avoid trivial solution)
+        equations.append(Eq(list(reactant_coeff)[0], 1))    
+
+        # Solve the system
+        solution = solve(equations, reactant_coeff + product_coeff, dict=True)    
+
+        if not solution: ## this can be improved...
+            return None  # No solution
+        else:
             try:
-                converted.append(balance_stoichiometry(list(re),list(pr),underdetermined=None))
-            except Exception:
+                common_factor = self.find_int(solution[0].values())
+                new_coeffs = [x*common_factor for x in solution[0].values()]
+                for i,(k,v) in enumerate(solution[0].items()):
+                    solution[0][k] = new_coeffs[i]
+            except TypeError:
+                return None 
+            reactant_string = ''
+            product_string = ''
+            rs = 0 ; ps = 0
+            for symbol,coeff in solution[0].items():
                 try:
-                    converted.append(balance_stoichiometry(list(re),list(pr)))
-                except Exception:
-                    pass                            
-        return(converted) 
+                    if float(coeff) <= 0:
+                        return(None)
+                except TypeError:
+                    return(None)
+                
+                rp,num = list(str(symbol))
+                if rp == 'r':
+                    if rs == 0:
+                        reactant_string += f'{coeff} {reactant_keys[int(num)]}'
+                    else:
+                        reactant_string += f' + {coeff} {reactant_keys[int(num)]}'
+                    rs += 1
+                else:
+                    rp == 'p'
+                    if ps == 0:
+                        product_string += f'{coeff} {product_keys[int(num)]}'
+                    else:
+                        product_string += f' + {coeff} {product_keys[int(num)]}'
+                    ps += 1
+            equation_string = reactant_string + ' = ' + product_string
+        return(equation_string) 
     
-    def screen_converted(self,converted_reactions): # this should be multiprocessed - > perhaps a mp.Pool? as it only needs the big list
-        def _convert_ord_to_dict(r):
-            re,pr =  r
-            try:
-                reacs = {k:int(re[k]) for k in re}
-                prods = {k:int(pr[k]) for k in pr}
-            except Exception:
-                warnings.warn('\n error with {}'.format(r))
-            return(reacs,prods)
-    
-        screened = []
-        for r in converted_reactions:
-            try:
-                re,pr = _convert_ord_to_dict(r)
-                try:
-                    screened.append(Equilibrium(re,pr))
-                except Exception:
-                    pass
-            except Exception :
-                pass
-        return(screened)    
+    def balance_function(self,iterable):
+            '''balance_function checks the balance of a given list of strings, this is here for future multiprocessing
+            '''
+            reactants = {
+                molecule:self.parse_molecule(molecule) for molecule in iterable[0]
+                }
+            products = {
+                molecule:self.parse_molecule(molecule) for molecule in iterable[1]
+                }
+            balanced = self.balance_reaction(reactants,products)
+            if balanced:
+                return(balanced)
     
     def run_all(self):
         warnings.filterwarnings('ignore')
-        print('orig =',len(self.reactions),end='...')
         approved = self.remove_indices(self.reactions)
-        print(' approved = ',len(approved),end='...')
         strings = self.convert_to_string(approved)
-        print(' prescreening = ',len(strings))
-        equations = self.convert_to_equation(strings)
-        screened = self.screen_converted(equations)
-        print(' final = ',len(screened),end='...')
-        return(screened)
+
+
+        #screened = tqdm_pathos.map(self.mp_function,strings)
+        screened = []
+        for reaction in tqdm.tqdm(strings):
+            screen = self.balance_function(reaction)
+            if screen:
+                screened.append(screen)
+
+
+        return([x for x in screened if x is not None])
