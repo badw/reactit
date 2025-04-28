@@ -1,4 +1,3 @@
-from typing import Mapping
 import numpy as np 
 import itertools as it 
 import tqdm 
@@ -288,5 +287,31 @@ class MappingtoReaction:
             screen = self.balance_function(reaction)
             if screen:
                 screened.append(screen)
-
-        return([x for x in screened if x is not None])
+        screened = [x for x in screened if x]
+        self.screened = screened 
+        return(screened)
+    
+    @staticmethod
+    def get_reactants_products(reaction):
+            r,p = reaction.split('=')
+            rs = r.split('+')
+            rdict = {}
+            for i in rs:
+                rsplits = [x for x in i.split(' ') if x] 
+                rdict[rsplits[-1]] = int(rsplits[0])
+            
+            ps = p.split('+')
+            pdict = {}
+            for i in ps:
+                psplits = [x for x in i.split(' ') if x]
+                pdict[psplits[-1]] = int(psplits[0])    
+    
+            return([rdict,pdict])
+    
+    def as_dict(self):
+        _dict = {i:{'reaction_string':r} for i,r in enumerate(self.screened)}
+        for i,reaction in _dict.items():
+            r,p = self.get_reactants_products(reaction['reaction_string'])
+            _dict[i]['reactants'] = r 
+            _dict[i]['products'] = p 
+        return(_dict)
