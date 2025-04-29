@@ -78,7 +78,7 @@ based on a given set of placemarker values
             for i,size in enumerate(sizing):
                 reactants = it.combinations(
                     [
-                        x for x in range(self.nc+1)
+                        x for x in range(self.nc)
                     ],
                     size[0]
                 )    
@@ -86,7 +86,7 @@ based on a given set of placemarker values
 
                 products = it.combinations(
                     [
-                        x for x in range(self.nc+1)
+                        x for x in range(self.nc)
                     ],
                     size[1]
                 )
@@ -102,20 +102,23 @@ based on a given set of placemarker values
 
         reactions = self.convert_strings(reactions)
         return(reactions)
-            
-    def remove_indices(self,reaction_indexes):
-        ''''''
-        @staticmethod
-        def filterfunc(iterable,valid_nums):
+    
+    @staticmethod
+    def indicesfilterfunc(iterable,valid_nums):
             spec = list(it.chain(*iterable))
             if not [x for x in spec if x not in valid_nums]:
-                return(iterable)
-                    
+                return(iterable)  
+                  
+    def remove_indices(self,reaction_indexes):
+        '''
+        removes invalid indices i.e. if original numeric reaction list contains 11,12,13 and max no. compounds = 10 these will be filtered out 
+        DEPRECATED
+        '''
 
         filtered = list(
             filter(
                 lambda x: x is not None, map(
-                    lambda x: filterfunc(x,self.compounds.keys()),reaction_indexes
+                    lambda x: self.indicesfilterfunc(x,self.compounds.keys()),reaction_indexes
                     )
                     )
         )
@@ -271,8 +274,16 @@ based on a given set of placemarker values
     
     def iterate(self,max_length=4):
         warnings.filterwarnings('ignore')
-        numeric_reactions = self.enumerate_combinations(max_length = max_length)
+        numeric_reactions = list(
+            self.enumerate_combinations(max_length = max_length)
+         ) #this is a generator
+        print(self.nc,len(numeric_reactions))
+        self.numeric_reactions = numeric_reactions
+        print(numeric_reactions[0])
         approved = self.remove_indices(numeric_reactions)
+        self.approved = approved
+        print(len(approved))
+        print(approved[0])
         strings = self.convert_to_string(approved)
         #screened = tqdm_pathos.map(self.mp_function,strings)
         screened = []
