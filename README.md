@@ -1,5 +1,6 @@
 [![Tests](https://github.com/badw/reactit/actions/workflows/tests.yml/badge.svg)](https://github.com/badw/reactit/actions/workflows/tests.yml)
 
+![](./static/reactit.png | width=100)
 
 ### `reactit` -  **React**ion **It**erator
 
