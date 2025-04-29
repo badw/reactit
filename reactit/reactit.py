@@ -15,9 +15,9 @@ import tqdm_pathos
 
 
 
-class ReactionsListGenerator:
+class ReactionGenerator:
     '''
-    `ReactionsDictionaryGenerator` is a class that generates a dictionary of values:
+    `ReactionsMapGenerator` is a class that generates a dictionary of values:
     ([0], [1, 2, 3])
 ([0], [1, 2, 4])
 ([0], [1, 2, 5])
@@ -28,12 +28,14 @@ based on a given set of placemarker values
     
     def __init__(
             self,
-            no_compounds=None,
-            path='.'
+            compounds=None,
             ):
-        self.nc = no_compounds
-        self.path = path
-
+        self.nc = len(compounds)
+        if isinstance(compounds,list):
+            self.compounds = {i:c for i,c in enumerate(compounds)}
+        else:
+            self.compounds = compounds          
+    
     def convert_strings(self,reactions):
         for reaction in reactions:
             r,p = reaction.strip().split('],')
@@ -56,7 +58,7 @@ based on a given set of placemarker values
                 )
                 )
 
-    def iterate(
+    def enumerate_combinations(
             self,
             max_length=4,
     ):
@@ -92,7 +94,7 @@ based on a given set of placemarker values
                     it.product(reactants, products)
                     )
                 filtered = []
-                for v in map(lambda x: ReactionsListGenerator.reaction_filter(x), combined):
+                for v in map(lambda x: self.reaction_filter(x), combined):
                     if v:
                         filtered.append(v)
                 filtered = list(set(filtered))
@@ -100,16 +102,6 @@ based on a given set of placemarker values
 
         reactions = self.convert_strings(reactions)
         return(reactions)
-
-class MappingtoReaction:
-    ''' a class that takes a premade reactions reference dictionary and generates a list of reactions with it that are then further balanced and filtered'''
-    
-    def __init__(self,reactions,compounds):
-        self.reactions = reactions
-        if isinstance(compounds,list):
-            self.compounds = {i:c for i,c in enumerate(compounds)}
-        else:
-            self.compounds = compounds            
             
     def remove_indices(self,reaction_indexes):
         ''''''
@@ -123,7 +115,7 @@ class MappingtoReaction:
         filtered = list(
             filter(
                 lambda x: x is not None, map(
-                    lambda x: filterfunc(x,self.compounds.keys()),self.reactions
+                    lambda x: filterfunc(x,self.compounds.keys()),reaction_indexes
                     )
                     )
         )
@@ -277,9 +269,10 @@ class MappingtoReaction:
             if balanced:
                 return(balanced)
     
-    def run_all(self):
+    def iterate(self,max_length=4):
         warnings.filterwarnings('ignore')
-        approved = self.remove_indices(self.reactions)
+        numeric_reactions = self.enumerate_combinations(max_length = max_length)
+        approved = self.remove_indices(numeric_reactions)
         strings = self.convert_to_string(approved)
         #screened = tqdm_pathos.map(self.mp_function,strings)
         screened = []
@@ -288,7 +281,7 @@ class MappingtoReaction:
             if screen:
                 screened.append(screen)
         screened = [x for x in screened if x]
-        self.screened = screened 
+        self.reactions = screened 
         return(screened)
     
     @staticmethod
