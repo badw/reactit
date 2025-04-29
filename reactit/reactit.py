@@ -16,15 +16,6 @@ import tqdm_pathos
 
 
 class ReactionGenerator:
-    '''
-    `ReactionsMapGenerator` is a class that generates a dictionary of values:
-    ([0], [1, 2, 3])
-([0], [1, 2, 4])
-([0], [1, 2, 5])
-([0], [1, 2, 6])
-([0], [1, 2, 7])
-based on a given set of placemarker values
-'''
     
     def __init__(
             self,
@@ -35,8 +26,12 @@ based on a given set of placemarker values
             self.compounds = {i:c for i,c in enumerate(compounds)}
         else:
             self.compounds = compounds          
-    
-    def convert_strings(self,reactions):
+            
+    @staticmethod
+    def convert_number_strings(reactions):
+        '''
+        converts a list of reaction strings from self.numeric_reaction_filter back into a list of numbers
+        '''
         for reaction in reactions:
             r,p = reaction.strip().split('],')
             r = tuple(int(x) for x in r.split('[[')[1].split(',') if x)
@@ -44,7 +39,13 @@ based on a given set of placemarker values
             yield ((r,p))
 
     @staticmethod    
-    def reaction_filter(reaction):
+    def numeric_reaction_filter(reaction:list)->str:
+        '''filters numeric reactions (e.g. [[1,2,3],[4]]) based on:
+        1. if reactants = products 
+        2. if any of the reactants are in the products (this is to avoid symmetry reactants 
+
+        returns a string of that reaction which is later converted back to a list by "self.convert_number_strings"
+        '''
         reactants = sorted(reaction[0])
         products = sorted(reaction[1])
         if not reactants == products:
@@ -57,11 +58,44 @@ based on a given set of placemarker values
                     )
                 )
                 )
+            
+    @staticmethod
+    def string_reaction_filter(r:list)->list:
+        '''
+        takes a reaction list string i.e. [['N2','O2','H2'],['HNO3']] and screens it for discrepancies between the elemental compositions of reactants and products. 
 
-    def enumerate_combinations(
-            self,
-            max_length=4,
-    ):
+        impossible reactions are not returned.
+        '''
+        re,pr = r
+        c = []
+        for i in re:
+            rs = [x for x in i]
+            for j in rs:
+                try:
+                    int(j)
+                except Exception:
+                    c.append(j)
+    
+        dr = set(dict.fromkeys(c))
+    
+        c = []
+        for i in pr:
+            ps = [x for x in i]
+            for j in ps:
+                try:
+                    int(j)
+                except Exception:
+                    c.append(j)
+    
+        dp = set(dict.fromkeys(c))
+    
+        if dr == dp:
+            return(r)
+
+    def enumerate_combinations(self,max_length=4)->list:
+        '''enumerates possible combinations of self.compounds as a numeric entity given a max length (minimum reaction length of 3)
+        returns a list of lists
+        '''
         reactions = []
         for reaction_length in range(3,max_length+1):
             sizing = [
@@ -94,75 +128,41 @@ based on a given set of placemarker values
                     it.product(reactants, products)
                     )
                 filtered = []
-                for v in map(lambda x: self.reaction_filter(x), combined):
+                for v in map(lambda x: self.numeric_reaction_filter(x), combined):
                     if v:
                         filtered.append(v)
                 filtered = list(set(filtered))
                 reactions.extend(filtered)
 
-        reactions = self.convert_strings(reactions)
-        return(reactions)
-    
-    @staticmethod
-    def indicesfilterfunc(iterable,valid_nums):
-            spec = list(it.chain(*iterable))
-            if not [x for x in spec if x not in valid_nums]:
-                return(iterable)  
-                  
-    def remove_indices(self,reaction_indexes):
-        '''
-        removes invalid indices i.e. if original numeric reaction list contains 11,12,13 and max no. compounds = 10 these will be filtered out 
-        DEPRECATED
-        '''
+        reactions = self.convert_number_strings(reactions)
 
-        filtered = list(
-            filter(
-                lambda x: x is not None, map(
-                    lambda x: self.indicesfilterfunc(x,self.compounds.keys()),reaction_indexes
-                    )
-                    )
-        )
-        return(filtered)
+        return(reactions)
+
+
     
-    def convert_to_string(self,approved_list):
-    
-        def _screen_string(r):
-            re,pr = r
-            c = []
-            for i in re:
-                rs = [x for x in i]
-                for j in rs:
-                    try:
-                        int(j)
-                    except Exception:
-                        c.append(j)
-        
-            dr = set(dict.fromkeys(c))
-        
-            c = []
-            for i in pr:
-                ps = [x for x in i]
-                for j in ps:
-                    try:
-                        int(j)
-                    except Exception:
-                        c.append(j)
-        
-            dp = set(dict.fromkeys(c))
-        
-            if dr == dp:
-                return(r)
-    
+    def convert_to_string(self,numeric_reactions:list)->list:
+        '''takes a numeric reaction i.e. [[0,1,2],[3]] and converts the numbers into a string given by self.compounds
+
+        i.e.
+        self.compounds = {0:'N2',1:'O2',2:'H2',3:'HNO3'} 
+
+        [[0,1,2],[3]] -> [['N2','O2','H2'],['HNO3']]
+
+        returns the converted list
+        '''
         converted = []
-        for r in approved_list:
+        for r in numeric_reactions:
             d = [[self.compounds[i] for i in r[0]],[self.compounds[i] for i in r[1]]]
-            ds = _screen_string(d)
+            ds = self.string_reaction_filter(d)
             if ds:
                 converted.append(ds)
         return(converted)
     
     @staticmethod
-    def parse_molecule(formula): 
+    def parse_molecule(formula:str)->dict: 
+        '''parses a molecule string i.e. 'H2O' into a dictionary broken down into elemental counts 
+        i.e. {'H':2,'O':1}
+        '''
         # Regular expression to match elements and their counts 
         pattern = r'([A-Z][a-z]?)(\d*)' 
         matches = re.findall(pattern, formula) 
@@ -180,7 +180,10 @@ based on a given set of placemarker values
         return dict(atom_count)  
        
     @staticmethod
-    def find_int(_lst):
+    def find_coefficients(_lst:list)->list:
+        '''finds the common denominator and an integer factor to multiply reactions by
+        returns a list of new coefficients 
+        '''
         denoms = [Fraction(x).denominator for x in _lst]
         return (
             functools.reduce(
@@ -188,8 +191,10 @@ based on a given set of placemarker values
             )
         )    
 
-    def balance_reaction(self,reactants, products):
-        '''this function allows for undetermined systems
+    def balance_reaction(self,reactants:list, products:list)->str:
+        '''balances a reaction given a list of reactant strings and product strings. 
+        by default it allows for undetermined systems and applies coefficients (if you desire something more agnostic go check out chempy.balance_reaction)
+        returns a reaction string 
         '''
         # Create a list of all elements
         product_keys = list(products.keys())
@@ -226,7 +231,7 @@ based on a given set of placemarker values
             return None  # No solution
         else:
             try:
-                common_factor = self.find_int(solution[0].values())
+                common_factor = self.find_coefficients(solution[0].values())
                 new_coeffs = [x*common_factor for x in solution[0].values()]
                 for i,(k,v) in enumerate(solution[0].items()):
                     solution[0][k] = new_coeffs[i]
@@ -257,9 +262,10 @@ based on a given set of placemarker values
                         product_string += f' + {coeff} {product_keys[int(num)]}'
                     ps += 1
             equation_string = reactant_string + ' = ' + product_string
+
         return(equation_string) 
     
-    def balance_function(self,iterable):
+    def balance_function(self,iterable:list) -> str:
             '''balance_function checks the balance of a given list of strings, this is here for future multiprocessing
             '''
             reactants = {
@@ -272,31 +278,34 @@ based on a given set of placemarker values
             if balanced:
                 return(balanced)
     
-    def iterate(self,max_length=4):
-        warnings.filterwarnings('ignore')
-        numeric_reactions = list(
-            self.enumerate_combinations(max_length = max_length)
-         ) #this is a generator
-        print(self.nc,len(numeric_reactions))
-        self.numeric_reactions = numeric_reactions
-        print(numeric_reactions[0])
-        approved = self.remove_indices(numeric_reactions)
-        self.approved = approved
-        print(len(approved))
-        print(approved[0])
-        strings = self.convert_to_string(approved)
+    def iterate(self,max_length=int(4)) -> list:
+        '''
+        iterates possible reactions up to a maximum length (DEFAULT: 4) i.e. CO + H2O = CO2 + H2
+        returns a list of reactions that are also accessible via self.reactions'''
+
+        numeric_reactions = self.enumerate_combinations(max_length = int(max_length)) #this is a generator
+        strings = self.convert_to_string(numeric_reactions) # this is a list...
         #screened = tqdm_pathos.map(self.mp_function,strings)
-        screened = []
+        
+        balanced = []
         for reaction in tqdm.tqdm(strings):
             screen = self.balance_function(reaction)
             if screen:
-                screened.append(screen)
-        screened = [x for x in screened if x]
-        self.reactions = screened 
-        return(screened)
+                balanced.append(screen)
+        balanced = [x for x in balanced if x]
+        self.reactions = balanced 
+        return(balanced)
     
     @staticmethod
-    def get_reactants_products(reaction):
+    def get_reactants_products(reaction:str) -> list:
+            '''
+            generates a list of dictionaries of reactants and products from a reaction string.
+            i.e. '2 H2 + 1 O2 = 2 H2O' :
+            [
+            {'H2':2,'O2':1}
+            {'H2O':2}
+            ]
+            '''
             r,p = reaction.split('=')
             rs = r.split('+')
             rdict = {}
@@ -312,8 +321,22 @@ based on a given set of placemarker values
     
             return([rdict,pdict])
     
-    def as_dict(self):
-        _dict = {i:{'reaction_string':r} for i,r in enumerate(self.screened)}
+    def as_dict(self) -> dict:
+        '''
+        takes the list of reactions and converts it to a dictionary with broken down reactants and products.
+
+        {
+        <reaction num.>: {
+        'reaction_string: <reaction string>,
+        'reactants': <reactants dict>,
+        'products': <products dict>
+        }
+        .
+        .
+        .
+        }
+        '''
+        _dict = {i:{'reaction_string':r} for i,r in enumerate(self.reactions)}
         for i,reaction in _dict.items():
             r,p = self.get_reactants_products(reaction['reaction_string'])
             _dict[i]['reactants'] = r 
