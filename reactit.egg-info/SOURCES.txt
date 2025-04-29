@@ -1,8 +1,0 @@
-README.md
-setup.py
-reactit/reactit.py
-reactit.egg-info/PKG-INFO
-reactit.egg-info/SOURCES.txt
-reactit.egg-info/dependency_links.txt
-reactit.egg-info/requires.txt
-reactit.egg-info/top_level.txt

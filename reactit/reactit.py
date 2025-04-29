@@ -1,18 +1,12 @@
 import numpy as np 
 import itertools as it 
 import tqdm 
-import gzip 
-import os 
 import math 
-import warnings 
 from sympy import symbols, Eq, solve    
 import functools 
-import math 
 from fractions import Fraction 
 import re 
 from collections import defaultdict 
-import tqdm_pathos 
-
 
 
 class ReactionGenerator:
@@ -26,7 +20,7 @@ class ReactionGenerator:
             self.compounds = {i:c for i,c in enumerate(compounds)}
         else:
             self.compounds = compounds          
-            
+
     @staticmethod
     def convert_number_strings(reactions):
         '''

@@ -1,4 +1,0 @@
-numpy
-chempy
-tqdm
-pathos
