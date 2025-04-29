@@ -24,9 +24,9 @@ class ReactionGenerator:
 
     @staticmethod
     def convert_number_strings(reactions):
-        '''
+        """
         converts a list of reaction strings from self.numeric_reaction_filter back into a list of numbers
-        '''
+        """
         for reaction in reactions:
             r,p = reaction.strip().split('],')
             r = tuple(int(x) for x in r.split('[[')[1].split(',') if x)
@@ -35,12 +35,13 @@ class ReactionGenerator:
 
     @staticmethod
     def numeric_reaction_filter(reaction:list)->str:
-        '''filters numeric reactions (e.g. [[1,2,3],[4]]) based on:
+        """
+        filters numeric reactions (e.g. [[1,2,3],[4]]) based on:
         1. if reactants = products 
         2. if any of the reactants are in the products (this is to avoid symmetry reactants 
 
         returns a string of that reaction which is later converted back to a list by "self.convert_number_strings"
-        '''
+        """
         reactants = sorted(reaction[0])
         products = sorted(reaction[1])
         if not reactants == products:
@@ -56,11 +57,11 @@ class ReactionGenerator:
             
     @staticmethod
     def string_reaction_filter(r:list)->list:
-        '''
+        """
         takes a reaction list string i.e. [['N2','O2','H2'],['HNO3']] and screens it for discrepancies between the elemental compositions of reactants and products. 
 
         impossible reactions are not returned.
-        '''
+        """
         re,pr = r
         c = []
         for i in re:
@@ -87,10 +88,11 @@ class ReactionGenerator:
         if dr == dp:
             return(r)
 
-    def enumerate_combinations(self,max_length=4)->list:
-        '''enumerates possible combinations of self.compounds as a numeric entity given a max length (minimum reaction length of 3)
+    def enumerate_combinations(self,max_length=4)->tuple:
+        """
+        enumerates possible combinations of self.compounds as a numeric entity given a max length (minimum reaction length of 3)
         returns a list of lists
-        '''
+        """
         reactions = []
         for reaction_length in range(3,max_length+1):
             sizing = [
@@ -136,7 +138,8 @@ class ReactionGenerator:
 
     
     def convert_to_string(self,numeric_reactions:list)->list:
-        '''takes a numeric reaction i.e. [[0,1,2],[3]] and converts the numbers into a string given by self.compounds
+        """
+        takes a numeric reaction i.e. [[0,1,2],[3]] and converts the numbers into a string given by self.compounds
 
         i.e.
         self.compounds = {0:'N2',1:'O2',2:'H2',3:'HNO3'} 
@@ -144,7 +147,7 @@ class ReactionGenerator:
         [[0,1,2],[3]] -> [['N2','O2','H2'],['HNO3']]
 
         returns the converted list
-        '''
+        """
         converted = []
         for r in numeric_reactions:
             d = [[self.compounds[i] for i in r[0]],[self.compounds[i] for i in r[1]]]
@@ -155,9 +158,10 @@ class ReactionGenerator:
     
     @staticmethod
     def parse_molecule(formula:str)->dict: 
-        '''parses a molecule string i.e. 'H2O' into a dictionary broken down into elemental counts 
+        """
+        parses a molecule string i.e. 'H2O' into a dictionary broken down into elemental counts 
         i.e. {'H':2,'O':1}
-        '''
+        """
         # Regular expression to match elements and their counts 
         pattern = r'([A-Z][a-z]?)(\d*)' 
         matches = re.findall(pattern, formula) 
@@ -176,9 +180,10 @@ class ReactionGenerator:
        
     @staticmethod
     def find_coefficients(_lst:list)->list:
-        '''finds the common denominator and an integer factor to multiply reactions by
+        """
+        finds the common denominator and an integer factor to multiply reactions by
         returns a list of new coefficients 
-        '''
+        """
         denoms = [Fraction(x).denominator for x in _lst]
         return (
             functools.reduce(
@@ -187,10 +192,11 @@ class ReactionGenerator:
         )    
 
     def balance_reaction(self,reactants:list, products:list)->str:
-        '''balances a reaction given a list of reactant strings and product strings. 
+        """
+        balances a reaction given a list of reactant strings and product strings. 
         by default it allows for undetermined systems and applies coefficients (if you desire something more agnostic go check out chempy.balance_reaction)
         returns a reaction string 
-        '''
+        """
         # Create a list of all elements
         product_keys = list(products.keys())
         reactant_keys = list(reactants.keys())
@@ -250,7 +256,6 @@ class ReactionGenerator:
                         reactant_string += f' + {coeff} {reactant_keys[int(num)]}'
                     rs += 1
                 else:
-                    rp == 'p'
                     if ps == 0:
                         product_string += f'{coeff} {product_keys[int(num)]}'
                     else:
@@ -261,8 +266,9 @@ class ReactionGenerator:
         return(equation_string) 
     
     def balance_function(self,iterable:list) -> str:
-            '''balance_function checks the balance of a given list of strings, this is here for future multiprocessing
-            '''
+            """
+            balance_function checks the balance of a given list of strings, this is here for future multiprocessing
+            """
             reactants = {
                 molecule:self.parse_molecule(molecule) for molecule in iterable[0]
                 }
@@ -274,9 +280,10 @@ class ReactionGenerator:
                 return(balanced)
     
     def iterate(self,max_length=int(4)) -> list:
-        '''
+        """
         iterates possible reactions up to a maximum length (DEFAULT: 4) i.e. CO + H2O = CO2 + H2
-        returns a list of reactions that are also accessible via self.reactions'''
+        returns a list of reactions that are also accessible via self.reactions
+        """
 
         numeric_reactions = self.enumerate_combinations(max_length = int(max_length)) #this is a generator
         strings = self.convert_to_string(numeric_reactions) # this is a list...
@@ -293,14 +300,14 @@ class ReactionGenerator:
     
     @staticmethod
     def get_reactants_products(reaction:str) -> list:
-            '''
+            """
             generates a list of dictionaries of reactants and products from a reaction string.
             i.e. '2 H2 + 1 O2 = 2 H2O' :
             [
             {'H2':2,'O2':1}
             {'H2O':2}
             ]
-            '''
+            """
             r,p = reaction.split('=')
             rs = r.split('+')
             rdict = {}
@@ -317,7 +324,7 @@ class ReactionGenerator:
             return([rdict,pdict])
     
     def as_dict(self) -> dict:
-        '''
+        """
         takes the list of reactions and converts it to a dictionary with broken down reactants and products.
 
         {
@@ -330,7 +337,7 @@ class ReactionGenerator:
         .
         .
         }
-        '''
+        """
         _dict = {i:{'reaction_string':r} for i,r in enumerate(self.reactions)}
         for i,reaction in _dict.items():
             r,p = self.get_reactants_products(reaction['reaction_string'])
@@ -339,19 +346,25 @@ class ReactionGenerator:
         return(_dict)
     
     def to_chempy(self) -> list:
-        '''outputs a list of chempy Equilibrium objects
-    REQUIRES chempy to be installed
-        '''
+        """
+        outputs a list of chempy Equilibrium objects
+        REQUIRES chempy to be installed
+        """
         try:
             from chempy import Equilibrium 
-            return([Equilibrium.from_string(eq) for eq in self.reactions])
+            return(
+                [
+                    Equilibrium.from_string(eq) for eq in self.reactions
+                    ]
+                    )
         except ImportError:
             warnings.warn("chempy not installed - use 'pip install chempy'")
     
     def to_pymatgen(self) -> list:
-        '''outputs a list of pymatgen BalancedReaction objects
+        """
+        outputs a list of pymatgen BalancedReaction objects
         REQUIRES pymatgen to be installed
-        '''
+        """
         try:
             from pymatgen.analysis.reaction_calculator import BalancedReaction 
             return(
