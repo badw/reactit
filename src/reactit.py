@@ -7,6 +7,7 @@ import functools
 from fractions import Fraction 
 import re 
 from collections import defaultdict 
+import warnings
 
 
 class ReactionGenerator:
@@ -32,7 +33,7 @@ class ReactionGenerator:
             p = tuple(int(x) for x in p.split('[')[1].split(']]')[0].split(',') if x)
             yield ((r,p))
 
-    @staticmethod    
+    @staticmethod
     def numeric_reaction_filter(reaction:list)->str:
         '''filters numeric reactions (e.g. [[1,2,3],[4]]) based on:
         1. if reactants = products 
@@ -336,3 +337,27 @@ class ReactionGenerator:
             _dict[i]['reactants'] = r 
             _dict[i]['products'] = p 
         return(_dict)
+    
+    def to_chempy(self) -> list:
+        '''outputs a list of chempy Equilibrium objects
+    REQUIRES chempy to be installed
+        '''
+        try:
+            from chempy import Equilibrium 
+            return([Equilibrium.from_string(eq) for eq in self.reactions])
+        except Exception:
+            warnings.warn("chempy not installed - use 'pip install chempy'")
+    
+    def to_pymatgen(self) -> list:
+        '''outputs a list of pymatgen BalancedReaction objects
+        REQUIRES pymatgen to be installed
+        '''
+        try:
+            from pymatgen.analysis.reaction_calculator import BalancedReaction 
+            return(
+                [
+                    BalancedReaction.from_dict(r) for r in self.as_dict()
+                ]
+            )
+        except Exception:
+            warnings.warn("pymatgen not installed - use 'pip install pymatgen'")

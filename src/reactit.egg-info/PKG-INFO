@@ -1,0 +1,33 @@
+Metadata-Version: 2.4
+Name: reactit
+Version: 0.0.1
+Summary: iterating possible reactions from a given set of compounds
+Author-email: "Benjamin A. D. Williamson" <benjamin.williamson@ntnu.no>
+License: BSD-3
+Project-URL: repository, https://github.com/badw/reactit.git
+Project-URL: changelog, https://github.com/badw/reactit/tree/main/CHANGELOG.md
+Keywords: Chemistry,Organic Chemistry,Reactions,Materials Science
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: Unix
+Classifier: Operating System :: MacOS
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: numpy
+Requires-Dist: tqdm
+Requires-Dist: sympy
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4.0; extra == "dev"
+Requires-Dist: pytest-cov>=3.0.0; extra == "dev"
+
+### `reactit` -  **React**ion **It**erator
+
+`reactit` is a code for generating all possible reactions between species in an efficient manner.
