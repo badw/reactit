@@ -59,3 +59,4 @@ Todo:
 - [ ] multiprocessing for particularly large reactions 
 - [ ] save to file 
 - [ ] `CLI`
+- [ ] more tests
