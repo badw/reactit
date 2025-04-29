@@ -1,9 +1,9 @@
 [![Tests](https://github.com/badw/reactit/actions/workflows/tests.yml/badge.svg)](https://github.com/badw/reactit/actions/workflows/tests.yml)
 
 
-<img src="./static/reactit.png" width="100">
 
-### `reactit` -  **React**ion **It**erator
+
+### `reactit` -  **React**ion **It**erator <img src="./static/reactit.png" width="300" align="right">
 
 `reactit` is a code for generating all possible reactions between species in an efficient manner.
 
