@@ -345,7 +345,7 @@ class ReactionGenerator:
         try:
             from chempy import Equilibrium 
             return([Equilibrium.from_string(eq) for eq in self.reactions])
-        except Exception:
+        except ImportError:
             warnings.warn("chempy not installed - use 'pip install chempy'")
     
     def to_pymatgen(self) -> list:
@@ -356,8 +356,8 @@ class ReactionGenerator:
             from pymatgen.analysis.reaction_calculator import BalancedReaction 
             return(
                 [
-                    BalancedReaction.from_dict(r) for r in self.as_dict()
+                    BalancedReaction.from_dict(r) for r in self.as_dict().values()
                 ]
             )
-        except Exception:
+        except ImportError:
             warnings.warn("pymatgen not installed - use 'pip install pymatgen'")
