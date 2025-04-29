@@ -22,3 +22,5 @@ pip install .
 Todo: 
 - [ ] ability to pass `SMILES` strings to form `SMILES` equations 
 - [ ] multiprocessing for particularly large reactions 
+- [ ] save to file 
+- [ ] `CLI`
