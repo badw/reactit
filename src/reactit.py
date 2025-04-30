@@ -14,7 +14,7 @@ class ReactionGenerator:
     
     def __init__(
             self,
-            compounds=None,
+            compounds=list or dict,
             ):
         self.nc = len(compounds)
         if isinstance(compounds,list):
@@ -88,7 +88,7 @@ class ReactionGenerator:
         if dr == dp:
             return(r)
 
-    def enumerate_combinations(self,max_length=4)->tuple:
+    def enumerate_combinations(self,max_length=4):#->tuple:
         """
         enumerates possible combinations of self.compounds as a numeric entity given a max length (minimum reaction length of 3)
         returns a list of lists
@@ -135,8 +135,6 @@ class ReactionGenerator:
 
         return(reactions)
 
-
-    
     def convert_to_string(self,numeric_reactions:list)->list:
         """
         takes a numeric reaction i.e. [[0,1,2],[3]] and converts the numbers into a string given by self.compounds
@@ -179,21 +177,21 @@ class ReactionGenerator:
         return dict(atom_count)  
        
     @staticmethod
-    def find_coefficients(_lst:list)->list:
+    def find_coefficients(fractional_coefficients:list)->int:
         """
         finds the common denominator and an integer factor to multiply reactions by
-        returns a list of new coefficients 
+        returns an integer multiplyer to get new coefficients 
         """
-        denoms = [Fraction(x).denominator for x in _lst]
+        denoms = [Fraction(x).denominator for x in fractional_coefficients]
         return (
             functools.reduce(
                 lambda a, b: a*b//math.gcd(a, b), denoms
             )
         )    
 
-    def balance_reaction(self,reactants:list, products:list)->str:
+    def balance_reaction(self,reactants:dict, products:dict)->str:
         """
-        balances a reaction given a list of reactant strings and product strings. 
+        balances a reaction given a dictionary of self.parse_molecule reactants and products. 
         by default it allows for undetermined systems and applies coefficients (if you desire something more agnostic go check out chempy.balance_reaction)
         returns a reaction string 
         """
@@ -265,7 +263,7 @@ class ReactionGenerator:
 
         return(equation_string) 
     
-    def balance_function(self,iterable:list) -> str:
+    def balance_function(self,iterable:list):
             """
             balance_function checks the balance of a given list of strings, this is here for future multiprocessing
             """
