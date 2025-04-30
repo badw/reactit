@@ -42,18 +42,24 @@ reactions
 
 support for [https://github.com/bjodah/chempy.git](chempy) `Equilibrium` and [https://github.com/materialsproject/pymatgen.git](pymatgen) `BalancedReaction` objects are included: 
 
+##### `chempy`
 ```
 chempy_reactions = rg.to_chempy()
 chempy_reactions[0]
 ```
 > Equilibrium(CO2 + H2 ↔ CO + H2O)
 
+
+##### `pymatgen`
 ```
 pymatgen_reactions = rg.to_pymatgen()
 pymatgen_reactions[0]
 ```
 > BalancedReaction(H2 + CO2 -> H2O + CO)
 
+
+
+##### `networkx`
 ```
 networkx_graph = rg.to_networkx_graph()
 
