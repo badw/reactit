@@ -37,6 +37,9 @@ reactions
 
 > ['1 CO2 + 1 H2 = 1 H2O + 1 CO']
 
+
+##### `chempy`, `pymatgen` and `networkx` support 
+
 support for [https://github.com/bjodah/chempy.git](chempy) `Equilibrium` and [https://github.com/materialsproject/pymatgen.git](pymatgen) `BalancedReaction` objects are included: 
 
 ```
@@ -51,7 +54,24 @@ pymatgen_reactions[0]
 ```
 > BalancedReaction(H2 + CO2 -> H2O + CO)
 
+```
+networkx_graph = rg.to_networkx_graph()
 
+import networkx as nx 
+
+node_colours= []
+node_sizes = []
+for node in list(graph.nodes):
+    if isinstance(node,int):
+        node_colours.append('red')
+        node_sizes.append(25)
+    else:
+        node_colours.append('blue')
+        node_sizes.append(100)
+
+nx.draw_random(graph,node_color=node_colours,node_size=node_sizes,width=0.1)
+```
+<img src="./static/networkx.png" width="300" align="left" alt="networkx graph generated from reactit">
 
 #### 
 Todo: 

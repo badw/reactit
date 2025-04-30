@@ -372,3 +372,26 @@ class ReactionGenerator:
             )
         except ImportError:
             warnings.warn("pymatgen not installed - use 'pip install pymatgen'")
+
+    def to_networkx_graph(self):
+        """
+        converts the reactions list to a networkx.Graph object 
+        """
+        try:
+            import networkx as nx
+            G = nx.Graph()
+
+            for reaction,breakdown in self.as_dict().items():
+                G.add_node(reaction) #or just an integer breakdown['reaction_string']
+                [
+                    G.add_node(molecule) for molecule in list(breakdown['reactants'])+list(breakdown['products'])
+                    ]
+                [
+                    G.add_edge(reactant,reaction) for reactant in list(breakdown['reactants'])
+                    ]
+                [
+                    G.add_edge(reaction,product) for product in list(breakdown['products'])
+                    ]
+            return(G)
+        except ImportError:
+            warnings.warn("networkx not installed - use 'pip install networkx'")
