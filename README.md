@@ -61,13 +61,13 @@ pymatgen_reactions[0]
 
 ##### `networkx`
 ```
-networkx_graph = rg.to_networkx_graph()
+G = rg.to_networkx_graph()
 
 import networkx as nx 
 
 node_colours= []
 node_sizes = []
-for node in list(graph.nodes):
+for node in list(G.nodes):
     if isinstance(node,int):
         node_colours.append('red')
         node_sizes.append(25)
@@ -75,7 +75,7 @@ for node in list(graph.nodes):
         node_colours.append('blue')
         node_sizes.append(100)
 
-nx.draw_random(graph,node_color=node_colours,node_size=node_sizes,width=0.1)
+nx.draw_random(G,node_color=node_colours,node_size=node_sizes,width=0.1)
 ```
 <img src="./static/networkx.png" width="300" align="left" alt="networkx graph generated from reactit">
 
