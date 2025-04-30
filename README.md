@@ -77,6 +77,6 @@ nx.draw_random(graph,node_color=node_colours,node_size=node_sizes,width=0.1)
 
 #### Todo: 
 - [ ] ability to pass `SMILES` strings to form `SMILES` equations 
-- [ ] multiprocessing for particularly large reactions 
+- [ ] multiprocessing for particularly large reaction sets
 - [ ] save to file 
 - [ ] `CLI`
