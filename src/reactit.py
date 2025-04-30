@@ -197,10 +197,16 @@ class ReactionGenerator:
         """
         # Create a list of all elements
         product_keys = list(products.keys())
+        product_values = list(
+            list(products.values())[0]
+        )
         reactant_keys = list(reactants.keys())
+        reactant_values = list(
+            list(reactants.values())[0]
+        )
         elements = set()
-        for species in (reactant_keys + product_keys):
-            elements.update(species)
+        for element in (reactant_values + product_values):
+            elements.add(element)
         elements = sorted(elements)    
 
         # Set up symbolic coefficients

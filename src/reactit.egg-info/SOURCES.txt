@@ -6,3 +6,4 @@ src/reactit.egg-info/SOURCES.txt
 src/reactit.egg-info/dependency_links.txt
 src/reactit.egg-info/requires.txt
 src/reactit.egg-info/top_level.txt
+tests/test.py

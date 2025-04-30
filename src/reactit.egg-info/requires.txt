@@ -1,6 +1,7 @@
 numpy
 tqdm
 sympy
+pytest
 
 [dev]
 pytest>=7.4.0
