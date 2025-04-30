@@ -1,5 +1,3 @@
-from re import A, L
-import pytest 
 from reactit import ReactionGenerator
 
 

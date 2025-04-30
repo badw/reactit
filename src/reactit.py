@@ -14,7 +14,7 @@ class ReactionGenerator:
     
     def __init__(
             self,
-            compounds=list or dict,
+            compounds
             ):
         self.nc = len(compounds)
         if isinstance(compounds,list):
