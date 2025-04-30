@@ -73,6 +73,8 @@ nx.draw_random(graph,node_color=node_colours,node_size=node_sizes,width=0.1)
 ```
 <img src="./static/networkx.png" width="300" align="left" alt="networkx graph generated from reactit">
 
+
+
 #### Todo: 
 - [ ] ability to pass `SMILES` strings to form `SMILES` equations 
 - [ ] multiprocessing for particularly large reactions 
