@@ -187,12 +187,12 @@ def test_iterate():
 
     assert three_reaction == ['2 CO2 = 2 CO + 1 O2', '2 H2O = 2 H2 + 1 O2', '2 NO2 = 1 N2 + 2 O2']
 
-    assert four_reaction == ['1 CO2 = 1 CO + 1 H2O',
-                             '2 CO2 = 2 CO + 1 NO2',
+    assert four_reaction == ['1 CO2 + 1 H2 = 1 CO + 1 H2O',
                              '2 CO2 = 2 CO + 1 O2',
-                             '2 H2O = 2 H2 + 1 NO2',
                              '2 H2O = 2 H2 + 1 O2',
-                             '2 NO2 = 1 N2 + 2 O2']
+                             '2 NO2 = 1 N2 + 2 O2',
+                             '4 CO2 + 1 N2 = 4 CO + 2 NO2',
+                             '4 H2O + 1 N2 = 4 H2 + 2 NO2']
     
 
 def test_get_reactants_products():
