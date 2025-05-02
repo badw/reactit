@@ -6,7 +6,7 @@
 <div id="toc">
   <ul style="list-style: none">
     <summary>
-      <h2> <pre>reactit - Reaction Iterator</pre>  </h2>
+      <h2> <pre>reactit - Reaction Iterator</pre></h2>
     </summary>
   </ul>
 </div>
