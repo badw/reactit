@@ -1,6 +1,5 @@
 import numpy as np 
 import itertools as it 
-import tqdm 
 import math 
 from sympy import symbols, Eq, solve    
 import functools 
@@ -8,6 +7,7 @@ from fractions import Fraction
 import re 
 from collections import defaultdict 
 import warnings
+import tqdm_pathos
 
 
 class ReactionGenerator:
@@ -135,7 +135,7 @@ class ReactionGenerator:
 
         return(reactions)
 
-    def convert_to_string(self,numeric_reactions:list)->list:
+    def convert_to_string(self,numeric_reactions:tuple)->list:
         """
         takes a numeric reaction i.e. [[0,1,2],[3]] and converts the numbers into a string given by self.compounds
 
@@ -280,22 +280,34 @@ class ReactionGenerator:
             if balanced:
                 return(balanced)
     
-    def iterate(self,max_length=int(4)) -> list:
+    def iterate(
+            self,
+            max_length:int = 4,
+            n_cpus:int = 4,
+            **tqdm_pathos_kws:dict,
+            ) -> list:
         """
         iterates possible reactions up to a maximum length (DEFAULT: 4) i.e. CO + H2O = CO2 + H2
         returns a list of reactions that are also accessible via self.reactions
+        default 
         """
 
         numeric_reactions = self.enumerate_combinations(max_length = int(max_length)) #this is a generator
         strings = self.convert_to_string(numeric_reactions) # this is a list...
         #screened = tqdm_pathos.map(self.mp_function,strings)
-        
+
+        screened = tqdm_pathos.map(self.balance_function,strings,n_cpus=n_cpus,**tqdm_pathos_kws)
         balanced = []
-        for reaction in tqdm.tqdm(strings):
-            screen = self.balance_function(reaction)
-            if screen:
-                balanced.append(screen)
-        balanced = [x for x in balanced if x]
+        for reaction in screened:
+            if reaction:
+                balanced.append(reaction)
+        #serial
+        #balanced = []
+        #for reaction in strings:
+        #    screen = self.balance_function(reaction)
+        #    if screen:
+        #        balanced.append(screen)
+        #balanced = [x for x in balanced if x]
         self.reactions = balanced 
         return(balanced)
     

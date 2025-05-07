@@ -25,7 +25,7 @@ classifiers = [
     "Operating System :: MacOS",
 ]
 requires-python = ">=3.10"
-dependencies = ["numpy","tqdm","sympy","pytest"]
+dependencies = ["numpy","tqdm","sympy","pytest","tqdm_pathos"]
 
 [project.optional-dependencies]
 dev = ["pytest>=7.4.0", "pytest-cov>=3.0.0"]
