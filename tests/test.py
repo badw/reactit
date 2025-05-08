@@ -1,4 +1,4 @@
-from reactit import ReactionGenerator
+from reactit.reactit import ReactionGenerator
 
 
 def test_class_initialisation():
