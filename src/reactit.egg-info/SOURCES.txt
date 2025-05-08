@@ -1,6 +1,7 @@
+LICENSE
 README.md
 pyproject.toml
-src/reactit.py
+src/reactit/reactit.py
 src/reactit.egg-info/PKG-INFO
 src/reactit.egg-info/SOURCES.txt
 src/reactit.egg-info/dependency_links.txt

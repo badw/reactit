@@ -2,6 +2,7 @@ numpy
 tqdm
 sympy
 pytest
+tqdm_pathos
 
 [dev]
 pytest>=7.4.0
