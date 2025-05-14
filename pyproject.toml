@@ -7,7 +7,7 @@ name = "reactit"
 description="iterating possible reactions from a given set of compounds"
 version = "0.0.1"
 readme = "README.md"
-license = { text = "BSD-3" }
+license = { text = "MIT" }
 authors = [{ name = "Benjamin A. D. Williamson", email = "benjamin.williamson@ntnu.no" }]
 keywords = ["Chemistry", "Organic Chemistry", "Reactions","Materials Science"]
 classifiers = [
